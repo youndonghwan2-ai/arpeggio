@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>음성치료 상행 시퀀스 프로그램</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --line: #d9dce7;
+      --text: #1d2433;
+      --sub: #5a6478;
+      --accent: #4f46e5;
+      --accent2: #eef2ff;
+      --ok: #0f766e;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --goodBg: #ecfdf5;
+      --goodLine: #a7f3d0;
+      --badBg: #fef2f2;
+      --badLine: #fecaca;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(23, 30, 60, 0.06);
+      margin-bottom: 18px;
+    }
+    h1, h2, h3 { margin: 0 0 10px; }
+    p { margin: 0 0 10px; }
+    .muted { color: var(--sub); }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(23, 30, 60, 0.04);
+    }
+    .badge {
+      display: inline-block;
+      background: var(--accent2);
+      color: var(--accent);
+      border: 1px solid #c7d2fe;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .phase {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 12px;
+      background: #fcfcff;
+    }
+    .phase h3 { font-size: 18px; }
+    .phase ul {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    label { font-size: 14px; color: var(--sub); display: block; margin-bottom: 4px; }
+    input[type="number"], select, input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 15px;
+      background: #fff;
+    }
+    input[type="file"] {
+      width: 100%;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+    .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    button {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    button.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    button.warn {
+      background: #fff7ed;
+      color: var(--warn);
+      border: 1px solid #fed7aa;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      font-size: 14px;
+    }
+    .status.error {
+      background: var(--badBg);
+      border-color: var(--badLine);
+      color: var(--danger);
+    }
+    .status.success {
+      background: var(--goodBg);
+      border-color: var(--goodLine);
+      color: var(--ok);
+    }
+    .timerBox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 180px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: radial-gradient(circle at center, #f8fbff 0%, #eef2ff 100%);
+      margin-top: 14px;
+      text-align: center;
+      padding: 20px;
+    }
+    .timerInner { display: flex; flex-direction: column; gap: 8px; }
+    .timerLabel { font-size: 16px; color: var(--sub); }
+    .timerValue { font-size: 54px; font-weight: 800; letter-spacing: -1px; }
+    .noteDisplay { font-size: 20px; font-weight: 700; color: var(--ok); }
+    .bank {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .noteCard {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+    }
+    .noteTitle { font-weight: 700; margin-bottom: 6px; }
+    .small { font-size: 13px; color: var(--sub); }
+    .tiny {
+      font-size: 12px;
+      color: var(--sub);
+      margin-top: 6px;
+      word-break: break-all;
+    }
+    .progress {
+      width: 100%;
+      height: 10px;
+      background: #e8ebf4;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 12px;
+    }
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, #4f46e5, #22c55e);
+      transition: width 0.12s linear;
+    }
+    .scriptBox, .testBox {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #fbfbfd;
+      border: 1px solid var(--line);
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+    .list {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      margin-top: 8px;
+    }
+    .pill.ok {
+      background: var(--goodBg);
+      border-color: var(--goodLine);
+      color: var(--ok);
+    }
+    .pill.bad {
+      background: var(--badBg);
+      border-color: var(--badLine);
+      color: var(--danger);
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .bank { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 640px) {
+      .controls { grid-template-columns: 1fr; }
+      .bank { grid-template-columns: 1fr; }
+      .timerValue { font-size: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badge">음성치료 프로그램</div>
+      <h1>노래조로 말하기</h1>
+      <p class="muted">천천히 따라 말하고, 쉬고, 다시 해보는 방식으로 연습할 수 있게 만든 숙제용 프로그램입니다. 음원에 맞춰 허밍, 음절, 짧은 문장까지 순서대로 연습해보세요.</p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="badge">프로그램 안내</div>
+        <h2>이렇게 연습해보세요</h2>
+
+        <div class="phase">
+          <h3>1단계. 소리 따라가기</h3>
+          <ul>
+            <li>먼저 편한 소리로 허밍을 해보세요.</li>
+            <li>그다음 마마마, 라라라, 노노노처럼 짧은 음절을 음원에 맞춰 따라 말해보세요.</li>
+            <li>한 번 끝나면 잠깐 쉬고, 다음 음으로 천천히 올라가 보세요.</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h3>2단계. 짧은 말 붙여보기</h3>
+          <ul>
+            <li>안녕하세요</li>
+            <li>또 만났군요</li>
+            <li>감사합니다</li>
+            <li>또 만납시다</li>
+            <li>오늘도 해볼게요</li>
+            <li>천천히 말해볼게요</li>
+          </ul>
+        </div>
+
+        <div class="phase">
+          <h3>3단계. 마무리 말하기</h3>
+          <ul>
+            <li>안녕하세요. 다시 만나요.</li>
+            <li>숨을 급하게 쓰지 말고, 편한 속도로 말해보세요.</li>
+          </ul>
+        </div>
+
+        <div class="scriptBox" id="scriptBox">기본 문구
+- 소리 따라가기: 허밍 → 마마마 / 라라라 / 노노노
+- 짧은 말 붙여보기: 안녕하세요 / 또 만났군요 / 감사합니다 / 또 만납시다 / 오늘도 해볼게요 / 천천히 말해볼게요
+- 마무리 말하기: 안녕하세요. 다시 만나요.
+
+추가하는 방법
+- 아래 코드의 phaseSelect 옵션에 새 문구를 한 줄 추가하면 됩니다.
+- scriptBox 안의 기본 문구 목록에도 같은 문구를 넣으면 화면 설명이 같이 바뀝니다.</div>
+
+        <div class="testBox" id="testBox">진단 테스트
+- 아직 실행 전</div>
+      </section>
+
+      <section class="card">
+        <div class="badge">재생 설정</div>
+        <h2>상행 시퀀스 플레이어</h2>
+        <p class="muted">각 음원 파일을 따로 올려서 단계별 재생 또는 자동 상행 재생이 가능합니다. 숙제로 배포할 때는 환자가 버튼만 눌러도 되도록 파일 이름과 폴더를 일정하게 맞추는 것이 좋습니다.</p>
+
+        <div class="controls">
+          <div>
+            <label for="loopCount">각 음 반복 횟수</label>
+            <input id="loopCount" type="number" min="1" max="20" value="2" />
+          </div>
+          <div>
+            <label for="restSec">반복 사이 쉬는 시간(초)</label>
+            <input id="restSec" type="number" min="0" max="5" step="0.1" value="0.4" />
+          </div>
+          <div>
+            <label for="phaseSelect">현재 단계</label>
+            <select id="phaseSelect">
+              <option value="허밍">허밍</option>
+              <option value="마마마">마마마</option>
+              <option value="라라라">라라라</option>
+              <option value="노노노">노노노</option>
+              <option value="안녕하세요">안녕하세요</option>
+              <option value="또 만났군요">또 만났군요</option>
+              <option value="감사합니다">감사합니다</option>
+              <option value="또 만납시다">또 만납시다</option>
+              <option value="안녕하세요. 다시 만나요.">안녕하세요. 다시 만나요.</option>
+            </select>
+          </div>
+          <div>
+            <label for="titleInput">세션 제목</label>
+            <input id="titleInput" type="text" value="1-3-5-3-1 상행 시퀀스" />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button id="playAllBtn">전체 상행 재생</button>
+          <button id="playSelectedBtn" class="secondary">선택 음만 재생</button>
+          <button id="runChecksBtn" class="secondary">파일 진단</button>
+          <button id="stopBtn" class="warn">정지</button>
+        </div>
+
+        <div class="status" id="status">준비됨. 음원 파일을 올린 뒤 재생 버튼을 누르세요.</div>
+
+        <div class="timerBox">
+          <div class="timerInner">
+            <div class="timerLabel" id="timerLabel">현재 단계</div>
+            <div class="timerValue" id="timerValue">00.0</div>
+            <div class="noteDisplay" id="noteDisplay">선택된 음 없음</div>
+          </div>
+        </div>
+
+        <div class="progress"><div class="bar" id="bar"></div></div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:18px;">
+      <div class="badge">음원 파일 업로드</div>
+      <h2>단계별 음원 등록</h2>
+      <p class="muted">지금 버전은 업로드형입니다. GitHub 배포용으로는 아래 설명대로 audio 폴더를 만들고 상대경로로 연결하는 방식이 더 편합니다.</p>
+      <div class="bank" id="bank"></div>
+    </section>
+  </div>
+
+  <script>
+    const notes = [
+      { key: 'C', label: 'C (도)' },
+      { key: 'Csharp', label: 'C# (도#)' },
+      { key: 'D', label: 'D (레)' },
+      { key: 'Dsharp', label: 'D# (레#)' },
+      { key: 'E', label: 'E (미)' },
+      { key: 'F', label: 'F (파)' },
+      { key: 'Fsharp', label: 'F# (파#)' },
+      { key: 'G', label: 'G (솔)' },
+      { key: 'Gsharp', label: 'G# (솔#)' },
+      { key: 'A', label: 'A (라)' },
+      { key: 'Asharp', label: 'A# (라#)' },
+      { key: 'B', label: 'B (시)' }
+    ];
+
+    const bank = document.getElementById('bank');
+    const statusEl = document.getElementById('status');
+    const noteDisplay = document.getElementById('noteDisplay');
+    const timerValue = document.getElementById('timerValue');
+    const timerLabel = document.getElementById('timerLabel');
+    const bar = document.getElementById('bar');
+    const scriptBox = document.getElementById('scriptBox');
+    const testBox = document.getElementById('testBox');
+    const phaseSelect = document.getElementById('phaseSelect');
+    const titleInput = document.getElementById('titleInput');
+    const loopCountInput = document.getElementById('loopCount');
+    const restSecInput = document.getElementById('restSec');
+
+    const fileMap = {};
+    let activeAudios = [];
+    let stopRequested = false;
+    let timerInterval = null;
+
+    function setStatus(msg, kind = 'neutral') {
+      statusEl.textContent = msg;
+      statusEl.classList.remove('error', 'success');
+      if (kind === 'error') statusEl.classList.add('error');
+      if (kind === 'success') statusEl.classList.add('success');
+    }
+
+    function safeRevoke(url) {
+      if (!url) return;
+      try { URL.revokeObjectURL(url); } catch (e) {}
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function resetVisuals(label = '현재 단계', note = '선택된 음 없음') {
+      clearInterval(timerInterval);
+      timerLabel.textContent = label;
+      timerValue.textContent = '00.0';
+      noteDisplay.textContent = note;
+      bar.style.width = '0%';
+    }
+
+    function startVisualTimer(seconds, label, noteText) {
+      clearInterval(timerInterval);
+      const safeSeconds = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+      const started = performance.now();
+      timerLabel.textContent = label;
+      noteDisplay.textContent = noteText;
+      timerInterval = setInterval(() => {
+        const elapsed = (performance.now() - started) / 1000;
+        const remain = Math.max(0, safeSeconds - elapsed);
+        timerValue.textContent = remain.toFixed(1).padStart(4, '0');
+        const pct = safeSeconds > 0 ? ((elapsed / safeSeconds) * 100) : 0;
+        bar.style.width = `${Math.min(100, pct)}%`;
+        if (remain <= 0) {
+          clearInterval(timerInterval);
+        }
+      }, 80);
+    }
+
+    function updateScriptBox() {
+      const title = titleInput.value.trim() || '1-3-5-3-1 상행 시퀀스';
+      const phase = phaseSelect.value;
+      scriptBox.textContent = `${title}\n현재 단계: ${phase}\n\n기본 흐름\n- 기본 리듬 익히기: 허밍 → 마마마 / 라라라 / 노노노\n- 단어 및 문장 적용: 안녕하세요 / 또 만났군요 / 감사합니다 / 또 만납시다\n- 마무리: 안녕하세요. 다시 만나요.\n\n현재 연습 문구\n- ${phase}`;
+    }
+
+    function getFriendlyAudioError(error) {
+      const raw = error && error.message ? error.message : String(error || '알 수 없는 오류');
+      if (/NotAllowedError/i.test(raw)) {
+        return '브라우저가 자동 재생을 막았다. 재생 버튼을 다시 직접 눌러주세요.';
+      }
+      if (/NotSupportedError/i.test(raw)) {
+        return '브라우저가 이 오디오 형식을 지원하지 않는다. wav 또는 mp3 파일로 다시 시도해보세요.';
+      }
+      if (/AbortError/i.test(raw)) {
+        return '오디오 재생이 중간에 중단되었다.';
+      }
+      return raw;
+    }
+
+    function readFileInfo(file) {
+      if (!file) return '파일 없음';
+      return `${file.name} | ${(file.size / 1024).toFixed(1)}KB | ${file.type || 'type 없음'}`;
+    }
+
+    function createAudioFromUrl(url) {
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      audio.src = url;
+      return audio;
+    }
+
+    async function loadAudioMeta(url) {
+      return new Promise((resolve, reject) => {
+        const audio = createAudioFromUrl(url);
+        let done = false;
+
+        const cleanup = () => {
+          audio.onloadedmetadata = null;
+          audio.oncanplaythrough = null;
+          audio.onerror = null;
+        };
+
+        const succeed = () => {
+          if (done) return;
+          done = true;
+          cleanup();
+          const duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+          resolve({ duration, audio });
+        };
+
+        audio.onloadedmetadata = () => {
+          if (Number.isFinite(audio.duration) && audio.duration > 0) {
+            succeed();
+          }
+        };
+
+        audio.oncanplaythrough = () => {
+          succeed();
+        };
+
+        audio.onerror = () => {
+          if (done) return;
+          done = true;
+          cleanup();
+          reject(new Error('파일을 읽지 못했거나 브라우저가 지원하지 않는 오디오 형식이다.'));
+        };
+
+        setTimeout(() => {
+          if (!done) {
+            succeed();
+          }
+        }, 1500);
+      });
+    }
+
+    async function validateSingleFile(noteKey) {
+      const record = fileMap[noteKey];
+      const noteObj = notes.find(n => n.key === noteKey);
+      if (!record) {
+        return { ok: false, key: noteKey, label: noteObj.label, detail: '파일이 아직 업로드되지 않음' };
+      }
+      try {
+        const { duration } = await loadAudioMeta(record.url);
+        const durationText = duration > 0 ? `${duration.toFixed(2)}초` : '길이 확인 불가';
+        return {
+          ok: true,
+          key: noteKey,
+          label: noteObj.label,
+          detail: `${readFileInfo(record.file)} | ${durationText}`
+        };
+      } catch (error) {
+        return {
+          ok: false,
+          key: noteKey,
+          label: noteObj.label,
+          detail: `${readFileInfo(record.file)} | ${getFriendlyAudioError(error)}`
+        };
+      }
+    }
+
+    async function runDiagnostics() {
+      testBox.textContent = '진단 테스트\n- 검사 중...';
+      const results = [];
+      for (const note of notes) {
+        results.push(await validateSingleFile(note.key));
+      }
+      const missingCount = results.filter(r => !r.ok).length;
+      const lines = ['진단 테스트'];
+      lines.push('- 테스트 1: 파일 업로드 여부 확인');
+      lines.push(`  결과: ${results.filter(r => fileMap[r.key]).length}/${notes.length}개 업로드됨`);
+      lines.push('- 테스트 2: 메타데이터 로딩 확인');
+      lines.push(`  결과: ${results.filter(r => r.ok).length}/${notes.length}개 정상 판독`);
+      lines.push('- 상세 결과');
+      results.forEach(r => {
+        lines.push(`  ${r.ok ? 'PASS' : 'FAIL'} | ${r.label} | ${r.detail}`);
+      });
+      testBox.textContent = lines.join('\n');
+      if (missingCount === 0) {
+        setStatus('진단 완료: 모든 파일이 재생 가능한 상태로 보인다.', 'success');
+      } else {
+        setStatus('진단 완료: 일부 파일이 없거나 형식 문제가 있다. 아래 진단 결과를 확인하세요.', 'error');
+      }
+      return results;
+    }
+
+    function buildBank() {
+      notes.forEach((note) => {
+        const card = document.createElement('div');
+        card.className = 'noteCard';
+        card.innerHTML = `
+          <div class="noteTitle">${note.label}</div>
+          <div class="small">${note.key} 파일 업로드</div>
+          <input type="file" accept="audio/wav,audio/x-wav,audio/mpeg,audio/mp3,audio/*" id="file_${note.key}" />
+          <div class="btns" style="margin-top:10px;">
+            <button class="secondary" type="button" data-play="${note.key}">미리듣기</button>
+            <button class="secondary" type="button" data-check="${note.key}">검사</button>
+          </div>
+          <div class="tiny" id="info_${note.key}">아직 파일 없음</div>
+          <div class="pill bad" id="pill_${note.key}">미등록</div>
+        `;
+        bank.appendChild(card);
+
+        const fileInput = card.querySelector(`#file_${note.key}`);
+        const infoEl = card.querySelector(`#info_${note.key}`);
+        const pillEl = card.querySelector(`#pill_${note.key}`);
+
+        fileInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          if (fileMap[note.key] && fileMap[note.key].url) {
+            safeRevoke(fileMap[note.key].url);
+          }
+
+          const url = URL.createObjectURL(file);
+          fileMap[note.key] = { file, url };
+          infoEl.textContent = readFileInfo(file);
+          pillEl.textContent = '검사 중';
+          pillEl.className = 'pill';
+          setStatus(`${note.label} 파일 등록됨: ${file.name}`);
+
+          const result = await validateSingleFile(note.key);
+          if (result.ok) {
+            pillEl.textContent = '사용 가능';
+            pillEl.className = 'pill ok';
+            infoEl.textContent = result.detail;
+            setStatus(`${note.label} 파일이 정상적으로 읽혔다.`, 'success');
+          } else {
+            pillEl.textContent = '문제 있음';
+            pillEl.className = 'pill bad';
+            infoEl.textContent = result.detail;
+            setStatus(`${note.label} 파일 검사 실패: ${result.detail}`, 'error');
+          }
+        });
+
+        const previewBtn = card.querySelector(`[data-play="${note.key}"]`);
+        previewBtn.addEventListener('click', async () => {
+          try {
+            await playSingle(note.key, 1);
+          } catch (error) {
+            setStatus(getFriendlyAudioError(error), 'error');
+          }
+        });
+
+        const checkBtn = card.querySelector(`[data-check="${note.key}"]`);
+        checkBtn.addEventListener('click', async () => {
+          const result = await validateSingleFile(note.key);
+          if (result.ok) {
+            pillEl.textContent = '사용 가능';
+            pillEl.className = 'pill ok';
+            infoEl.textContent = result.detail;
+            setStatus(`${note.label} 검사 완료: 정상`, 'success');
+          } else {
+            pillEl.textContent = '문제 있음';
+            pillEl.className = 'pill bad';
+            infoEl.textContent = result.detail;
+            setStatus(`${note.label} 검사 실패: ${result.detail}`, 'error');
+          }
+        });
+      });
+    }
+
+    function stopAll() {
+      stopRequested = true;
+      activeAudios.forEach(audio => {
+        try {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.src = '';
+        } catch (e) {}
+      });
+      activeAudios = [];
+      resetVisuals('현재 단계', '정지됨');
+      setStatus('재생이 정지되었다.');
+    }
+
+    async function playAudioRecord(record, label) {
+      if (!record || !record.url) {
+        throw new Error('오디오 파일이 등록되지 않았다.');
+      }
+
+      const { duration, audio } = await loadAudioMeta(record.url);
+      audio.preload = 'auto';
+      activeAudios.push(audio);
+      startVisualTimer(duration > 0 ? duration : 3, phaseSelect.value, label);
+
+      return new Promise((resolve, reject) => {
+        let finished = false;
+
+        const cleanup = () => {
+          audio.onended = null;
+          audio.onerror = null;
+          activeAudios = activeAudios.filter(a => a !== audio);
+        };
+
+        const fail = (error) => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          reject(error instanceof Error ? error : new Error(String(error)));
+        };
+
+        audio.onended = () => {
+          if (finished) return;
+          finished = true;
+          cleanup();
+          resolve();
+        };
+
+        audio.onerror = () => {
+          fail(new Error('오디오 디코딩 또는 재생 중 오류가 발생했다. 파일 형식을 다시 확인해보세요.'));
+        };
+
+        audio.play().catch((error) => {
+          fail(new Error(getFriendlyAudioError(error)));
+        });
+      });
+    }
+
+    async function playSingle(noteKey, loops = null) {
+      stopRequested = false;
+      const record = fileMap[noteKey];
+      const loopCount = loops || Number(loopCountInput.value);
+      const restSec = Number(restSecInput.value);
+      const noteObj = notes.find(n => n.key === noteKey);
+
+      if (!noteObj) {
+        throw new Error('알 수 없는 음 이름이다. 예: C, D, Fsharp');
+      }
+      if (!record) {
+        const message = `${noteObj.label} 파일이 아직 없다.`;
+        setStatus(message, 'error');
+        throw new Error(message);
+      }
+
+      setStatus(`${noteObj.label} 재생 시작`);
+      for (let i = 0; i < loopCount; i++) {
+        if (stopRequested) return;
+        noteDisplay.textContent = `${noteObj.label} | ${i + 1}/${loopCount}`;
+        try {
+          await playAudioRecord(record, `${noteObj.label} | ${i + 1}/${loopCount}`);
+        } catch (error) {
+          const friendly = `${noteObj.label} 재생 실패: ${getFriendlyAudioError(error)}`;
+          setStatus(friendly, 'error');
+          resetVisuals('오류', noteObj.label);
+          throw new Error(friendly);
+        }
+        if (stopRequested) return;
+        if (restSec > 0) {
+          startVisualTimer(restSec, '쉬는 시간', `${noteObj.label} 다음 반복 준비`);
+          await sleep(restSec * 1000);
+        }
+      }
+      setStatus(`${noteObj.label} 재생 완료`, 'success');
+      resetVisuals('현재 단계', `${noteObj.label} 완료`);
+    }
+
+    async function playAscendingAll() {
+      stopRequested = false;
+      updateScriptBox();
+      const loopCount = Number(loopCountInput.value);
+      const missing = notes.filter(n => !fileMap[n.key]);
+      if (missing.length) {
+        setStatus(`누락된 파일: ${missing.map(n => n.label).join(', ')}`, 'error');
+        return;
+      }
+
+      const checks = await runDiagnostics();
+      const broken = checks.filter(result => !result.ok);
+      if (broken.length) {
+        setStatus(`재생 중단: 문제가 있는 파일이 있다. ${broken.map(x => x.label).join(', ')}`, 'error');
+        return;
+      }
+
+      setStatus('전체 상행 재생 시작');
+      for (const note of notes) {
+        if (stopRequested) return;
+        try {
+          await playSingle(note.key, loopCount);
+        } catch (error) {
+          setStatus(getFriendlyAudioError(error), 'error');
+          return;
+        }
+      }
+      setStatus('전체 상행 재생 완료', 'success');
+      noteDisplay.textContent = '완료';
+    }
+
+    document.getElementById('playAllBtn').addEventListener('click', async () => {
+      try {
+        await playAscendingAll();
+      } catch (error) {
+        setStatus(getFriendlyAudioError(error), 'error');
+      }
+    });
+
+    document.getElementById('playSelectedBtn').addEventListener('click', async () => {
+      const choice = prompt('재생할 음 이름을 입력하세요. 예: C, D, Fsharp');
+      if (!choice) return;
+      try {
+        await playSingle(choice.trim());
+      } catch (error) {
+        setStatus(getFriendlyAudioError(error), 'error');
+      }
+    });
+
+    document.getElementById('runChecksBtn').addEventListener('click', async () => {
+      await runDiagnostics();
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', stopAll);
+    phaseSelect.addEventListener('change', updateScriptBox);
+    titleInput.addEventListener('input', updateScriptBox);
+    window.addEventListener('beforeunload', () => {
+      Object.values(fileMap).forEach(record => safeRevoke(record && record.url));
+    });
+
+    buildBank();
+    updateScriptBox();
+    resetVisuals();
+  </script>
+</body>
+</html>
