@@ -394,7 +394,20 @@
     const loopCountInput = document.getElementById('loopCount');
     const restSecInput = document.getElementById('restSec');
 
-    const fileMap = {};
+    const fileMap = {
+  C: { url: './audio/arp_C.wav' },
+  Csharp: { url: './audio/arp_Csharp.wav' },
+  D: { url: './audio/arp_D.wav' },
+  Dsharp: { url: './audio/arp_Dsharp.wav' },
+  E: { url: './audio/arp_E.wav' },
+  F: { url: './audio/arp_F.wav' },
+  Fsharp: { url: './audio/arp_Fsharp.wav' },
+  G: { url: './audio/arp_G.wav' },
+  Gsharp: { url: './audio/arp_Gsharp.wav' },
+  A: { url: './audio/arp_A.wav' },
+  Asharp: { url: './audio/arp_Asharp.wav' },
+  B: { url: './audio/arp_B.wav' }
+};
     let activeAudios = [];
     let stopRequested = false;
     let timerInterval = null;
